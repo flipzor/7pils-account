@@ -1,0 +1,89 @@
+<!doctype html>
+<!--
+  7 Pils — de downloadpagina.
+
+  Dit is de link die je je teamgenoten stuurt. De knop wijst naar de nieuwste release van deze
+  repo (`releases/latest/download/7pils.apk`), dus hij hoeft nooit aangepast te worden: een
+  nieuwe versie uitbrengen is één release aanmaken met dat bestand eraan.
+
+  Bewust geen versienummer in de knop. Wie deze pagina over een jaar opent moet de nieuwste
+  krijgen zonder dat iemand hier iets heeft bijgewerkt.
+
+  Bewust ook geen bouwstap, net als index.html: één bestand dat over vijf jaar nog te begrijpen
+  en aan te passen is.
+-->
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>7 Pils — de app</title>
+<style>
+  :root { color-scheme: light dark; --groen: #1E6B45; }
+  body {
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; padding: 24px; background: #F6F5EF; color: #22271F;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: #141814; color: #E6E4D9; }
+    .kaart { background: #1C211C; border-color: #2E342C; }
+    p.uitleg, li { color: #9BA192; }
+    :root { --groen: #58B183; }
+  }
+  .kaart {
+    max-width: 27rem; margin: 6vh auto; background: #fff; border: 1px solid #DEDDD2;
+    border-radius: 12px; padding: 24px;
+  }
+  h1 { font-size: 1.3rem; margin: 0 0 4px; }
+  h2 { font-size: 1rem; margin: 24px 0 8px; }
+  p.uitleg { color: #6C7263; margin-top: 0; }
+  a.knop {
+    display: block; text-align: center; text-decoration: none; margin: 20px 0 8px;
+    background: var(--groen); color: #fff; border-radius: 999px; padding: 14px 20px;
+    font-weight: 600;
+  }
+  ol { padding-left: 1.2rem; margin: 0; }
+  li { margin-bottom: 8px; }
+  .klein { font-size: 0.85rem; color: #6C7263; }
+</style>
+</head>
+<body>
+  <div class="kaart">
+    <h1>7 Pils</h1>
+    <p class="uitleg">
+      Spelers, trainingen, wedstrijden, statistieken, de kratjeslijst en het wasrooster van het
+      team — op je eigen telefoon, met het team op de achtergrond in sync.
+    </p>
+
+    <a class="knop" href="https://github.com/flipzor/7pils-account/releases/latest/download/7pils.apk">
+      Download de app
+    </a>
+    <p class="klein">Android, ongeveer 18 MB. Deze knop geeft altijd de nieuwste versie.</p>
+
+    <h2>Installeren</h2>
+    <ol>
+      <li>Tik op de knop hierboven; je browser vraagt of je het bestand wilt downloaden.</li>
+      <li>Open het gedownloade bestand. Android vraagt eenmalig of deze browser apps mag
+        installeren — dat moet je toestaan, anders gebeurt er niets.</li>
+      <li>Zie je een waarschuwing van Play Protect? Kies <em>Toch installeren</em>. Die komt
+        omdat de app niet uit de Play Store komt, niet omdat er iets mis mee is.</li>
+    </ol>
+
+    <h2>Een nieuwe versie</h2>
+    <p class="uitleg">
+      Download hem hier opnieuw en installeer eroverheen. Je gegevens blijven staan — je hoeft
+      de oude versie niet te verwijderen, en dat moet je ook niet doen.
+    </p>
+
+    <h2>Meedoen met het team</h2>
+    <p class="uitleg">
+      Na het installeren maak je een account en vul je de uitnodigingscode in die je van de
+      beheerder krijgt. Daarna staat het hele seizoen op je telefoon.
+    </p>
+
+    <p class="klein">
+      Vragen over je account? Die regel je op de <a href="./">accountpagina</a>.
+    </p>
+  </div>
+</body>
+</html>
