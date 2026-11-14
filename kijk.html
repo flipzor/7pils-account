@@ -256,7 +256,7 @@
         </section>
 
         <section class="kaart">
-          <h2>Laatste vijf</h2>
+          <h2>Laatste vijf <span class="grijs klein">(nieuwste links)</span></h2>
           <div class="vorm" id="vorm"></div>
           <p class="grijs klein" id="vorm-leeg" hidden>Nog geen uitslagen.</p>
         </section>
@@ -433,7 +433,8 @@ function vulStatistieken(stand) {
   const kleur = { W: "var(--winst)", G: "var(--gelijk)", V: "var(--verlies)" };
   const woord = { W: "gewonnen", G: "gelijk", V: "verloren" };
   const vorm = el("vorm");
-  vorm.replaceChildren(...(stand.vorm || []).map((w) => maak("div", {}, [
+  // De app levert de oudste eerst (zoals de momentumlijn); hier staat de laatste wedstrijd links.
+  vorm.replaceChildren(...(stand.vorm || []).slice().reverse().map((w) => maak("div", {}, [
     maak("span", {
       class: "bol", style: "background:" + kleur[w.uitslag],
       title: w.tegenstander + (w.thuis ? " (thuis)" : " (uit)"),
