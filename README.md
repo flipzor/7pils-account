@@ -17,3 +17,15 @@ er belt.
 Het verwijderen zelf gebeurt niet hier maar in de edge function `account` van het project:
 een account weghalen vraagt de service-sleutel, en die hoort nergens in een browser of op een
 telefoon te staan.
+
+## Meekijken zonder app (`kijk.html`)
+
+Wie van een beheerder een kijkcode krijgt, ziet op
+<https://flipzor.github.io/7pils-account/kijk.html> de statistieken en de selectie van het
+lopende seizoen, zonder account en zonder app. De beheerder deelt de link vanuit de app
+(☰ → Account → Meekijken zonder app); de code staat erin achter een `#`.
+
+De pagina rekent niets uit. De app van de beheerder zet een kant-en-klare momentopname op de
+server, en de edge function `kijken` geeft die terug bij een geldige code. Er staan alleen
+namen, rugnummers, posities en tellingen in, geen geboortedata, notities of foto's.
+
