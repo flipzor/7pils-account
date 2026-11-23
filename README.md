@@ -1,8 +1,19 @@
-# 7 Pils — accountpagina
+# 7 Pils — 7pils.nl
 
-Eén HTML-bestand, gepubliceerd via GitHub Pages op
-<https://flipzor.github.io/7pils-account/>. Het hoort bij de Android-app **7 Pils** (die repo
-is privé) en doet drie dingen:
+De website van de Android-app **7 Pils** (die repo is privé), gepubliceerd via GitHub Pages op
+<https://7pils.nl/> (het oude adres `flipzor.github.io/7pils-account/` stuurt daarheen door).
+Drie losse HTML-bestanden zonder bouwstap:
+
+| Pagina        | Wat                                                        |
+|---------------|------------------------------------------------------------|
+| `index.html`  | de voordeur: meekijken zonder app (zie hieronder)          |
+| `account.html`| de accountpagina                                           |
+| `app.html`    | de app downloaden                                          |
+| `kijk.html`   | alleen een doorverwijzing naar de voordeur, voor oude links |
+
+## Accountpagina (`account.html`)
+
+Hij doet drie dingen:
 
 - **de bevestigingsmail** na het registreren landt hier;
 - **wachtwoord vergeten**: de link uit de mail komt hier uit en je kiest een nieuw wachtwoord;
@@ -18,10 +29,13 @@ Het verwijderen zelf gebeurt niet hier maar in de edge function `account` van he
 een account weghalen vraagt de service-sleutel, en die hoort nergens in een browser of op een
 telefoon te staan.
 
-## Meekijken zonder app (`kijk.html`)
+Een mail van Supabase die nog naar de voordeur wijst (oudere appversies, al verstuurde mails)
+stuurt `index.html` meteen door naar `account.html`, met alles achter de `#` erbij.
+
+## Meekijken zonder app (`index.html`)
 
 Wie van een beheerder een kijkcode krijgt, ziet op
-<https://flipzor.github.io/7pils-account/kijk.html> de statistieken en de selectie van het
+<https://7pils.nl/> de statistieken en de selectie van het
 lopende seizoen, zonder account en zonder app. De beheerder deelt de link vanuit de app
 (☰ → Account → Meekijken zonder app); de code staat erin achter een `#`.
 
