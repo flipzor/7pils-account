@@ -24,6 +24,7 @@
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
 <title>7 Pils — meekijken</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
   :root {
     color-scheme: light dark;
@@ -32,6 +33,9 @@
     --lijn: #E4E8ED; --vlak: #F2F4F6;
     --winst: #2E7D32; --gelijk: #6B7689; --verlies: #C62828; --accent: #285E33;
     --waarschuwing-vlak: #FFF6E8; --waarschuwing: #6B3E05;
+    /* De grafieken, met de kleuren van de app: de lijn en de staafjes in het groen van de app,
+       de top 3 in groen, oranje en blauw (Theme.kt: primary, warning, chartThird). */
+    --grafiek: #469C54; --lijn-1: #469C54; --lijn-2: #E08A1E; --lijn-3: #2F6FD6;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -40,6 +44,7 @@
       --lijn: #2C3239; --vlak: #262B31;
       --winst: #62B870; --gelijk: #8C97A8; --verlies: #EF7B7B; --accent: #62B870;
       --waarschuwing-vlak: #3A2A12; --waarschuwing: #F5C98A;
+      --grafiek: #62B870; --lijn-1: #62B870; --lijn-2: #E08A1E; --lijn-3: #6FA8F0;
     }
   }
   * { box-sizing: border-box; }
@@ -103,6 +108,55 @@
   @media (prefers-color-scheme: dark) { .bol { color: #14171A; } }
   .vorm .tegen { font-size: 11px; color: var(--grijs); text-align: center; overflow: hidden;
     text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+  /* Met een momentumlijn erboven staan de kolommen zonder tussenruimte, zodat elk punt precies
+     boven zijn eigen uitslag staat. */
+  .vorm.met-lijn { gap: 0; }
+  .vorm.met-lijn > div { padding: 0 3px; }
+  .vorm.met-lijn .bol { width: auto; height: auto; background: none !important; font-size: 13px; }
+  .vorm.met-lijn .bol.W { color: var(--winst); } .vorm.met-lijn .bol.G { color: var(--gelijk); }
+  .vorm.met-lijn .bol.V { color: var(--verlies); }
+
+  /* Een lijngrafiek: de lijnen in een SVG die met de kaart meerekt, de punten als losse
+     bolletjes erboven, zodat ze rond blijven op elke breedte. */
+  .grafiek { position: relative; height: 96px; margin: 4px 0 6px; }
+  .grafiek svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .grafiek .punt {
+    position: absolute; width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; border-radius: 50%;
+    border: 2px solid var(--kaart); box-sizing: border-box;
+  }
+  .grafiek .aslabel { position: absolute; left: 0; width: 22px; text-align: right; transform: translateY(-50%);
+    font-size: 11px; color: var(--grijs); }
+  .assen { display: flex; font-size: 11px; color: var(--grijs); text-align: center; }
+  .assen span { flex: 1; }
+
+  /* De laatste wedstrijd. */
+  .uitslagkop { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .uitslagkop .stand { font-size: 24px; font-weight: 800; }
+  ul.makers { list-style: none; margin: 0; padding: 0; }
+  ul.makers li { display: flex; gap: 10px; align-items: baseline; padding: 7px 0; border-top: 1px solid var(--lijn); }
+  ul.makers .min { width: 30px; flex-shrink: 0; text-align: right; font-size: 13px; color: var(--grijs); font-variant-numeric: tabular-nums; }
+  ul.makers .wie { flex: 1; min-width: 0; }
+  ul.makers .wie b { font-weight: 600; }
+
+  /* De doelpuntklok: negen staafjes van tien minuten. */
+  .staven { display: flex; gap: 3px; align-items: flex-end; height: 120px; margin-top: 4px; }
+  .staven div { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; }
+  .staven .staaf { width: 100%; border-radius: 4px 4px 0 0; background: var(--lijn); min-height: 3px; }
+  .staven .staaf.vol { background: var(--grafiek); }
+  .staven .getal { font-size: 12px; min-height: 16px; }
+  .staven .min { font-size: 11px; color: var(--grijs); margin-top: 2px; }
+
+  /* De top 3: legenda en de schakelaar doelpunten/assists. */
+  /* Naam boven, telling eronder: "3 doelpunten in deze reeks · 8 dit seizoen" past op een
+     telefoon niet naast een naam, en zo ziet elke regel er hetzelfde uit. */
+  .legenda { display: grid; grid-template-columns: 9px minmax(0, 1fr); column-gap: 8px; align-items: center; padding: 3px 0; }
+  .legenda i { width: 9px; height: 9px; border-radius: 50%; }
+  .legenda b { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .legenda span { grid-column: 2; }
+  .schakel { display: flex; background: var(--vlak); border-radius: 999px; padding: 3px; margin-top: 12px; }
+  .schakel button { flex: 1; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600;
+    color: var(--grijs); padding: 7px; border-radius: 999px; cursor: pointer; }
+  .schakel button[aria-pressed="true"] { background: var(--kaart); color: var(--inkt); }
 
   ol.rang { list-style: none; margin: 0; padding: 0; }
   ol.rang li { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--lijn); }
@@ -264,8 +318,25 @@
 
         <section class="kaart">
           <h2>Laatste vijf <span class="grijs klein">(nieuwste links)</span></h2>
+          <div class="grafiek" id="momentum" hidden></div>
           <div class="vorm" id="vorm"></div>
           <p class="grijs klein" id="vorm-leeg" hidden>Nog geen uitslagen.</p>
+          <p class="grijs klein" id="momentum-uitleg" style="margin: 10px 0 0" hidden>Het momentum:
+            de lijn klimt na een zege, zakt na een nederlaag en kruipt bij een gelijkspel richting
+            het midden. Hij rekent door over het hele seizoen.</p>
+        </section>
+
+        <section class="kaart" id="laatste-kaart" hidden>
+          <h2>Laatste wedstrijd</h2>
+          <div class="uitslagkop">
+            <span class="bol" id="laatste-bol"></span>
+            <div style="flex: 1; min-width: 0">
+              <div class="stand" id="laatste-stand"></div>
+              <div class="grijs klein" id="laatste-wie"></div>
+            </div>
+          </div>
+          <ul class="makers" id="laatste-makers"></ul>
+          <p class="grijs klein" id="laatste-geen" style="margin: 0" hidden>Geen doelpunten.</p>
         </section>
 
         <section class="kaart">
@@ -281,6 +352,27 @@
         <section class="kaart">
           <h2>Opkomst wedstrijden</h2>
           <ol class="rang" id="opkomst"></ol>
+        </section>
+
+        <section class="kaart" id="reeks-kaart" hidden>
+          <h2 id="reeks-titel">Topscorers</h2>
+          <div id="reeks-legenda"></div>
+          <div class="grafiek" id="reeks-grafiek" style="height: 140px; margin-top: 10px"></div>
+          <div class="assen" id="reeks-as" style="padding-left: 28px"></div>
+          <p class="grijs klein" id="reeks-leeg" style="margin: 8px 0 0" hidden></p>
+          <div class="schakel" role="group" aria-label="Soort">
+            <button type="button" id="reeks-doelpunten" aria-pressed="true">Doelpunten</button>
+            <button type="button" id="reeks-assists" aria-pressed="false">Assists</button>
+          </div>
+          <p class="grijs klein" id="reeks-uitleg" style="margin: 10px 0 0"></p>
+        </section>
+
+        <section class="kaart" id="klok-kaart" hidden>
+          <h2>Wanneer scoren we</h2>
+          <div class="staven" id="klok"></div>
+          <p class="grijs klein" style="text-align: center; margin: 2px 0 10px">Speelminuut</p>
+          <div class="regel"><span>Eerste helft <b id="klok-1"></b></span><span>Tweede helft <b id="klok-2"></b></span></div>
+          <p class="grijs klein" id="klok-zonder" style="margin: 8px 0 0" hidden></p>
         </section>
 
         <section class="kaart">
@@ -484,27 +576,35 @@ function vulStatistieken(stand) {
   el("saldo").textContent = (saldo > 0 ? "+" : "") + saldo;
   el("saldo").style.color = saldo > 0 ? "var(--winst)" : saldo < 0 ? "var(--verlies)" : "";
 
-  const kleur = { W: "var(--winst)", G: "var(--gelijk)", V: "var(--verlies)" };
-  const woord = { W: "gewonnen", G: "gelijk", V: "verloren" };
-  const vorm = el("vorm");
   // De app levert de oudste eerst (zoals de momentumlijn); hier staat de laatste wedstrijd links.
-  vorm.replaceChildren(...(stand.vorm || []).slice().reverse().map((w) => maak("div", {}, [
+  const vorm = (stand.vorm || []).slice().reverse();
+  // Een beheerder met een app van vóór 20.5 stuurt geen momentum mee: dan alleen de bolletjes.
+  const metLijn = vorm.length > 0 && vorm.every((w) => typeof w.momentum === "number");
+  el("vorm").classList.toggle("met-lijn", metLijn);
+  el("vorm").replaceChildren(...vorm.map((w) => maak("div", {}, [
     maak("span", {
-      class: "bol", style: "background:" + kleur[w.uitslag],
+      class: "bol " + w.uitslag, style: "background:" + UITSLAGKLEUR[w.uitslag],
       title: w.tegenstander + (w.thuis ? " (thuis)" : " (uit)"),
-      "aria-label": woord[w.uitslag] + " " + w.stand + " tegen " + w.tegenstander,
+      "aria-label": UITSLAGWOORD[w.uitslag] + " " + w.stand + " tegen " + w.tegenstander,
     }, w.uitslag),
     maak("span", { class: "klein" }, w.stand),
     maak("span", { class: "tegen" }, w.tegenstander),
   ])));
-  el("vorm-leeg").hidden = (stand.vorm || []).length > 0;
+  el("vorm-leeg").hidden = vorm.length > 0;
+  el("momentum").hidden = el("momentum-uitleg").hidden = !metLijn;
+  if (metLijn) tekenMomentum(vorm);
+
+  vulLaatste(stand.laatste);
+  vulKlok(stand.doelpuntklok);
+  reeks = stand.reeks || null;
+  tekenReeks();
 
   const spelers = stand.spelers || [];
   vulRang("topscorers", spelers, (s) => s.goals, 5, (n) => String(n));
-  vulRang("assists", spelers, (s) => s.assists, 3, (n) => String(n));
+  vulRang("assists", spelers, (s) => s.assists, 5, (n) => String(n));
   // Opkomst alleen over wie er een lijst voor had; een procent over nul wedstrijden zegt niets.
   vulRang("opkomst", spelers.filter((s) => s.wedstrijden_van > 0),
-    (s) => s.wedstrijden / s.wedstrijden_van, 3, (n) => Math.round(n * 100) + "%");
+    (s) => s.wedstrijden / s.wedstrijden_van, 5, (n) => Math.round(n * 100) + "%");
 
   el("thuis").textContent = balans(stand.thuis);
   el("thuis-dp").textContent = stand.thuis.voor + "–" + stand.thuis.tegen;
@@ -518,6 +618,207 @@ function vulStatistieken(stand) {
 }
 
 const balans = (b) => b.gewonnen + " – " + b.gelijk + " – " + b.verloren;
+const UITSLAGKLEUR = { W: "var(--winst)", G: "var(--gelijk)", V: "var(--verlies)" };
+const UITSLAGWOORD = { W: "gewonnen", G: "gelijk", V: "verloren" };
+
+// ------------------------------------------------------------------------------------------
+// Grafieken (app 20.5). Alle getallen komen kant-en-klaar uit de app (`Meekijkstand.kt`);
+// hier wordt alleen geschaald en getekend, met dezelfde vorm als de kaarten in de app.
+// ------------------------------------------------------------------------------------------
+
+/**
+ * Tekent lijnen in `doos`. `x` en `y` zijn fracties van 0 tot 1 (links/boven = 0). De lijnen
+ * staan in een SVG die met de kaart meerekt; de punten zijn losse bolletjes erboven, anders
+ * worden ze ovaal op een brede kaart. `links` is de ruimte in px voor de getallen langs de as.
+ */
+function tekenLijnen(doos, { lijnen, hulplijnen = [], links = 0, vloeiend = false }) {
+  const RAND = 6; // ruimte boven en onder, zodat een punt op de rand heel blijft
+  const svg = svgEl("svg", { viewBox: "0 0 100 100", preserveAspectRatio: "none", "aria-hidden": "true",
+    style: `left:${links}px;top:${RAND}px;bottom:${RAND}px;width:calc(100% - ${links}px);height:calc(100% - ${RAND * 2}px)` });
+  const links_ = (fx) => `calc(${links}px + (100% - ${links}px) * ${fx})`;
+  const boven = (fy) => `calc(${RAND}px + (100% - ${RAND * 2}px) * ${fy})`;
+  const kinderen = [];
+
+  for (const h of hulplijnen) {
+    svg.append(svgEl("line", { x1: 0, x2: 100, y1: h.y * 100, y2: h.y * 100, stroke: "var(--lijn)",
+      "stroke-width": 1, "vector-effect": "non-scaling-stroke" }));
+    if (h.label != null) kinderen.push(maak("span", { class: "aslabel", style: "top:" + boven(h.y) }, h.label));
+  }
+  for (const lijn of lijnen) {
+    const p = lijn.punten;
+    if (p.length > 1) {
+      let d = `M ${p[0].x * 100} ${p[0].y * 100}`;
+      for (let i = 1; i < p.length; i++) {
+        if (vloeiend) {
+          // Controlepunten halverwege, zoals de momentumlijn in de app: niet hoekig.
+          const mx = (p[i - 1].x + p[i].x) / 2 * 100;
+          d += ` C ${mx} ${p[i - 1].y * 100} ${mx} ${p[i].y * 100} ${p[i].x * 100} ${p[i].y * 100}`;
+        } else {
+          d += ` L ${p[i].x * 100} ${p[i].y * 100}`;
+        }
+      }
+      svg.append(svgEl("path", { d, fill: "none", stroke: lijn.kleur, "stroke-width": 2.5,
+        "stroke-linecap": "round", "stroke-linejoin": "round", "vector-effect": "non-scaling-stroke" }));
+    }
+    for (const punt of p) {
+      kinderen.push(maak("span", { class: "punt", title: punt.titel ?? "",
+        style: `left:${links_(punt.x)};top:${boven(punt.y)};background:${punt.kleur ?? lijn.kleur}` }));
+    }
+  }
+  doos.replaceChildren(svg, ...kinderen);
+}
+
+function svgEl(tag, attributen) {
+  const e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const [naam, waarde] of Object.entries(attributen)) e.setAttribute(naam, waarde);
+  return e;
+}
+
+/**
+ * De momentumlijn boven de laatste vijf: één punt per kolom, gekleurd naar de uitslag, met het
+ * midden (0) als horizon. De schaal rekt mee met de grootste uitslag maar nooit verder dan 0,4,
+ * net als in de app — anders zou een kleine schommeling over de hele hoogte gaan.
+ */
+function tekenMomentum(vorm) {
+  const schaal = Math.max(0.4, ...vorm.map((w) => Math.abs(w.momentum)));
+  const n = vorm.length;
+  tekenLijnen(el("momentum"), {
+    vloeiend: true,
+    hulplijnen: [{ y: 0.5 }],
+    lijnen: [{
+      kleur: "var(--grafiek)",
+      punten: vorm.map((w, i) => ({
+        x: (i + 0.5) / n,
+        y: 0.5 - (w.momentum / schaal) * 0.5,
+        kleur: UITSLAGKLEUR[w.uitslag],
+        titel: w.stand + " " + w.tegenstander,
+      })),
+    }],
+  });
+}
+
+/** De laatste wedstrijd met wie er scoorde en wie er aangaf. */
+function vulLaatste(w) {
+  el("laatste-kaart").hidden = !w;
+  if (!w) return;
+  const bol = el("laatste-bol");
+  bol.textContent = w.uitslag;
+  bol.style.background = UITSLAGKLEUR[w.uitslag];
+  bol.setAttribute("aria-label", UITSLAGWOORD[w.uitslag]);
+  el("laatste-stand").textContent = w.stand;
+  el("laatste-wie").textContent = w.tegenstander + (w.thuis ? " (thuis)" : " (uit)") + " · " + datum(w.datum);
+
+  const regels = w.doelpunten.map((d) => maak("li", {}, [
+    maak("span", { class: "min" }, d.minuut != null ? d.minuut + "'" : ""),
+    maak("span", { class: "wie" }, [
+      maak("b", {}, d.maker ?? "Onbekende maker"),
+      d.penalty ? maak("span", { class: "grijs" }, " (penalty)") : null,
+      d.assist ? maak("span", { class: "grijs klein" }, " · assist " + d.assist) : null,
+    ]),
+  ]));
+  // Een doelpunt in de stand zonder rij erachter; zonder deze regel staat "3-1" naast twee namen.
+  const zonder = w.zonder_maker || 0;
+  if (zonder > 0) {
+    regels.push(maak("li", {}, [
+      maak("span", { class: "min" }, ""),
+      maak("span", { class: "wie grijs" }, zonder === 1 ? "1 doelpunt zonder maker" : zonder + " doelpunten zonder maker"),
+    ]));
+  }
+  el("laatste-makers").replaceChildren(...regels);
+  el("laatste-geen").hidden = regels.length > 0;
+}
+
+/** "Wanneer scoren we": negen staafjes van tien minuten, de hoogste vult de kaart. */
+function vulKlok(klok) {
+  el("klok-kaart").hidden = !klok;
+  if (!klok) return;
+  const hoogste = Math.max(1, ...klok.blokken.map((b) => b.doelpunten));
+  el("klok").replaceChildren(...klok.blokken.map((b) => maak("div", {
+    title: b.van + "–" + b.tot + "e minuut: " + b.doelpunten,
+  }, [
+    maak("span", { class: "getal" }, b.doelpunten > 0 ? String(b.doelpunten) : ""),
+    maak("span", { class: "staaf" + (b.doelpunten > 0 ? " vol" : ""),
+      style: "height:" + (b.doelpunten / hoogste) * 90 + "px" }),
+    maak("span", { class: "min" }, String(b.tot)),
+  ])));
+  el("klok-1").textContent = klok.eerste_helft;
+  el("klok-2").textContent = klok.tweede_helft;
+  const zonder = klok.zonder_minuut || 0;
+  el("klok-zonder").hidden = zonder === 0;
+  el("klok-zonder").textContent = (zonder === 1 ? "1 doelpunt" : zonder + " doelpunten") +
+    " zonder ingevulde minuut " + (zonder === 1 ? "staat" : "staan") + " hier niet bij.";
+}
+
+/**
+ * De top 3 over de laatste vijf wedstrijden. De lijn is de stand in het seizoen (hij begint
+ * bij `voor`, niet bij nul), zodat 12 tegen 9 er ook als 12 tegen 9 uitziet.
+ */
+let reeks = null;
+let reeksSoort = "doelpunten";
+const SOORT = {
+  doelpunten: { titel: "Topscorers", een: "doelpunt", meer: "doelpunten" },
+  assists: { titel: "Assists", een: "assist", meer: "assists" },
+};
+const LIJNKLEUR = ["var(--lijn-1)", "var(--lijn-2)", "var(--lijn-3)"];
+/** Dezelfde ronde stappen als de app (`scorerAxisStep`): hooguit vier hulplijnen. */
+const asStap = (hoogste) => [1, 2, 5, 10, 20, 50].find((s) => hoogste <= s * 4) ?? 50;
+
+function tekenReeks() {
+  el("reeks-kaart").hidden = !reeks;
+  if (!reeks) return;
+  const soort = SOORT[reeksSoort];
+  el("reeks-titel").textContent = soort.titel;
+  el("reeks-doelpunten").setAttribute("aria-pressed", String(reeksSoort === "doelpunten"));
+  el("reeks-assists").setAttribute("aria-pressed", String(reeksSoort === "assists"));
+  const lijnen = reeks[reeksSoort] || [];
+  const aantal = (n) => n + " " + (n === 1 ? soort.een : soort.meer);
+
+  el("reeks-grafiek").hidden = el("reeks-as").hidden = lijnen.length === 0;
+  el("reeks-leeg").hidden = lijnen.length > 0;
+  el("reeks-leeg").textContent = "Nog geen " + soort.meer + " toegewezen in dit seizoen.";
+  el("reeks-legenda").replaceChildren(...lijnen.map((l, i) => {
+    const inReeks = (l.stand.at(-1) ?? l.voor) - l.voor;
+    return maak("div", { class: "legenda" }, [
+      maak("i", { style: "background:" + LIJNKLEUR[i] }),
+      maak("b", {}, l.naam),
+      maak("span", { class: "grijs klein" },
+        aantal(inReeks) + " in deze reeks" + (l.seizoen > inReeks ? " · " + l.seizoen + " dit seizoen" : "")),
+    ]);
+  }));
+
+  const n = reeks.datums.length;
+  el("reeks-as").replaceChildren(...reeks.datums.map((d) => maak("span", {}, String(new Date(d + "T12:00").getDate()))));
+  el("reeks-uitleg").textContent = n < 2 ? "" :
+    "De lijn is de stand in het seizoen, ook wat er vóór deze reeks al stond. Onder de as de dag van de maand, van " +
+    datum(reeks.datums[0]) + " tot " + datum(reeks.datums[n - 1]) + ".";
+  if (lijnen.length === 0) return;
+
+  const hoogste = Math.max(...lijnen.map((l) => l.stand.at(-1) ?? l.voor));
+  const stap = asStap(hoogste);
+  const top = Math.max(Math.ceil(hoogste / stap) * stap, stap);
+  const y = (v) => 1 - v / top;
+  const hulplijnen = [];
+  for (let v = 0; v <= top; v += stap) hulplijnen.push({ y: y(v), label: String(v) });
+  // De laagste eerst, zodat de nummer 1 bovenop ligt waar de lijnen samenvallen.
+  tekenLijnen(el("reeks-grafiek"), {
+    links: 28,
+    hulplijnen,
+    lijnen: lijnen.map((l, i) => ({
+      kleur: LIJNKLEUR[i],
+      punten: l.stand.map((v, j) => ({ x: (j + 0.5) / n, y: y(v), titel: l.naam + ": " + v })),
+    })).reverse(),
+  });
+}
+
+el("reeks-doelpunten").addEventListener("click", () => { reeksSoort = "doelpunten"; tekenReeks(); });
+el("reeks-assists").addEventListener("click", () => { reeksSoort = "assists"; tekenReeks(); });
+
+/** "zo 11 okt" */
+function datum(iso) {
+  const d = new Date(iso + "T12:00");
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "short" });
+}
 
 /**
  * Een ranglijst. Bij gelijke stand delen ze de plek (1, 2, 2, 4), en wie op nul staat komt er
