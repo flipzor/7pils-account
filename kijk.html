@@ -175,6 +175,13 @@
     background: #285E33; color: #fff; font: inherit; font-weight: 700; font-size: 16px;
   }
   .knop[disabled] { opacity: .6; cursor: default; }
+  a.knop { display: grid; place-items: center; text-decoration: none; }
+  .knop.tweede { background: var(--vlak); color: var(--inkt); }
+  .agenda { margin-top: 16px; }
+  .agenda p { margin: 0 0 12px; }
+  .agendaknoppen { display: grid; gap: 8px; grid-template-columns: 1fr; }
+  @media (min-width: 640px) { .agendaknoppen { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  #agenda-gekopieerd { margin: 10px 0 0; }
   .melding { border-radius: 14px; padding: 14px 16px; background: var(--waarschuwing-vlak);
     color: var(--waarschuwing); font-size: 14px; margin-top: 16px; }
   .voet { text-align: center; font-size: 13px; color: var(--grijs); margin-top: 24px; }
@@ -304,6 +311,20 @@
       </div>
     </div>
 
+    <!-- Buiten de tabbladen: het programma hoort er ook als er nog geen cijfers zijn. -->
+    <section class="kaart agenda">
+      <h2>Wedstrijden in je agenda</h2>
+      <p class="grijs klein">Alle wedstrijden in één keer, als abonnement: verzet of afgelast gaat
+        vanzelf mee. Google Agenda kan er wel een halve dag over doen.</p>
+      <div class="agendaknoppen">
+        <a class="knop" id="agenda-google" target="_blank" rel="noopener">In Google Agenda zetten</a>
+        <a class="knop tweede" id="agenda-webcal">Apple Agenda of Outlook</a>
+        <button type="button" class="knop tweede" id="agenda-kopieer">Link kopiëren</button>
+      </div>
+      <p class="grijs klein" id="agenda-gekopieerd" role="status" hidden>Gekopieerd. Plak hem in je agenda bij
+        “abonneren” of “agenda toevoegen via URL”.</p>
+    </section>
+
     <p class="voet">
       <span id="bijgewerkt"></span><br>
       <button type="button" id="anderecode">Andere code invullen</button>
@@ -369,8 +390,41 @@ async function bekijk(code) {
     return;
   }
   onthoud.zet(code);
+  vulAgenda(code);
   toonCijfers(uitkomst.stand, uitkomst.bijgewerkt);
 }
+
+// ------------------------------------------------------------------------------------------
+// Agenda-abonnement (edge function `agenda`, app 20.4)
+// ------------------------------------------------------------------------------------------
+
+/**
+ * Hier staat de code wél in de link en niet achter een `#`: een abonnement wordt door de server
+ * van Google of Apple opgehaald, en die stuurt alleen pad en query mee. Met deze code is niets
+ * anders te zien dan het programma en de cijfers, en intrekken in de app sluit beide af.
+ */
+const agendaLink = (code) => PROJECT + "/functions/v1/agenda?code=" + code;
+
+function vulAgenda(code) {
+  const https = agendaLink(code);
+  const webcal = https.replace(/^https?:\/\//, "webcal://");
+  // Via de website: de Android-app van Google Agenda kan zelf geen abonnement toevoegen.
+  el("agenda-google").href = "https://calendar.google.com/calendar/r?cid=" + encodeURIComponent(webcal);
+  el("agenda-webcal").href = webcal;
+  el("agenda-kopieer").dataset.link = https;
+  el("agenda-gekopieerd").hidden = true;
+}
+
+el("agenda-kopieer").addEventListener("click", async (e) => {
+  const link = e.currentTarget.dataset.link;
+  try {
+    await navigator.clipboard.writeText(link);
+    el("agenda-gekopieerd").hidden = false;
+  } catch {
+    // Geen klembord (oude browser, geen https): dan maar laten zien, zodat je hem zelf kopieert.
+    window.prompt("Kopieer deze link en plak hem in je agenda:", link);
+  }
+});
 
 // ------------------------------------------------------------------------------------------
 // Schermen
