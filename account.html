@@ -1,0 +1,195 @@
+<!doctype html>
+<!--
+  7 Pils — de accountpagina.
+
+  Hier komt elke mail van Supabase op uit: de bevestigingsmail na het registreren en de link
+  waarmee je een nieuw wachtwoord kiest. En hier verwijder je je account zonder de app, wat
+  Google eist zodra een app accounts kent.
+
+  Bewust één bestand zonder bouwstap: hij moet over vijf jaar nog te begrijpen en aan te
+  passen zijn. Er staat niets geheims in — de publishable key is bedoeld om uitgedeeld te
+  worden en geeft in zijn eentje niets; alle rechten liggen in de RLS-policies van het
+  Supabase-project.
+-->
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>7 Pils — account</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+  :root { color-scheme: light dark; --groen: #1E6B45; --rood: #9B2C2C; }
+  body {
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; padding: 24px; background: #F6F5EF; color: #22271F;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: #141814; color: #E6E4D9; }
+    .kaart { background: #1C211C; border-color: #2E342C; }
+    input { background: #232923; color: inherit; border-color: #3E453B; }
+    p.uitleg { color: #9BA192; }
+    :root { --groen: #58B183; --rood: #E08A8A; }
+  }
+  .kaart {
+    max-width: 27rem; margin: 6vh auto; background: #fff; border: 1px solid #DEDDD2;
+    border-radius: 12px; padding: 24px;
+  }
+  h1 { font-size: 1.3rem; margin: 0 0 4px; }
+  p.uitleg { color: #6C7263; margin-top: 0; }
+  label { display: block; font-size: 0.85rem; margin: 12px 0 4px; }
+  input {
+    width: 100%; box-sizing: border-box; padding: 10px 12px; font: inherit;
+    border: 1px solid #C8C7BA; border-radius: 8px;
+  }
+  button {
+    width: 100%; margin-top: 16px; padding: 12px; font: inherit; font-weight: 600;
+    color: #fff; background: var(--groen); border: 0; border-radius: 8px; cursor: pointer;
+  }
+  button.gevaar { background: var(--rood); }
+  button[disabled] { opacity: 0.5; cursor: default; }
+  .melding { margin-top: 16px; }
+  .melding.fout { color: var(--rood); }
+  .melding.goed { color: var(--groen); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="kaart">
+  <h1>7 Pils</h1>
+  <p class="uitleg" id="uitleg">Even geduld…</p>
+
+  <div id="nieuwWachtwoord" hidden>
+    <label for="ww">Nieuw wachtwoord</label>
+    <input id="ww" type="password" autocomplete="new-password" minlength="8">
+    <button id="wwOpslaan">Wachtwoord opslaan</button>
+  </div>
+
+  <div id="inloggen" hidden>
+    <label for="email">E-mailadres</label>
+    <input id="email" type="email" autocomplete="email">
+    <label for="wachtwoord">Wachtwoord</label>
+    <input id="wachtwoord" type="password" autocomplete="current-password">
+    <button id="inlogKnop">Inloggen</button>
+  </div>
+
+  <div id="verwijderen" hidden>
+    <p id="wie"></p>
+    <p class="uitleg">
+      Je inloggegevens en je lidmaatschap van een team gaan weg, en dat is niet terug te
+      draaien. Wat op je telefoon staat blijft staan, en in een team blijft je speler met
+      zijn hele geschiedenis staan.
+    </p>
+    <button class="gevaar" id="verwijderKnop">Mijn account verwijderen</button>
+  </div>
+
+  <p class="melding" id="melding"></p>
+</div>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const PROJECT = "https://hxbvhyuxfleaxccpykhr.supabase.co";
+const PUBLISHABLE_KEY = "sb_publishable_7MajyNxskjwZf0OlsgmQiw_uuSRvu1Z";
+
+const supabase = createClient(PROJECT, PUBLISHABLE_KEY);
+const el = (id) => document.getElementById(id);
+const toon = (id, aan) => { el(id).hidden = !aan; };
+function zeg(tekst, soort) {
+  const m = el("melding");
+  m.textContent = tekst;
+  m.className = "melding " + (soort || "");
+}
+
+// Supabase hangt het resultaat van een mailtje achter een # in de URL. De client leest dat
+// zelf uit; het type zegt waar we vandaan komen.
+const hash = new URLSearchParams(location.hash.slice(1));
+const type = hash.get("type");
+
+async function start() {
+  if (hash.get("error_description")) {
+    el("uitleg").textContent = "Deze link werkt niet meer.";
+    zeg(decodeURIComponent(hash.get("error_description").replace(/\+/g, " ")), "fout");
+    return;
+  }
+
+  const { data } = await supabase.auth.getSession();
+
+  if (type === "recovery") {
+    el("uitleg").textContent = "Kies een nieuw wachtwoord voor je 7 Pils-account.";
+    toon("nieuwWachtwoord", true);
+    return;
+  }
+  if (type === "signup" || type === "magiclink") {
+    el("uitleg").textContent = "Je account is bevestigd. Je kunt nu in de app inloggen.";
+    return;
+  }
+  if (data.session) {
+    naVerwijderScherm(data.session.user.email);
+    return;
+  }
+  el("uitleg").textContent =
+    "Log in om je account te verwijderen. Dit kan ook in de app zelf, onder ☰ → Account.";
+  toon("inloggen", true);
+}
+
+function naVerwijderScherm(email) {
+  el("uitleg").textContent = "";
+  el("wie").textContent = "Ingelogd als " + email;
+  toon("inloggen", false);
+  toon("verwijderen", true);
+}
+
+el("wwOpslaan").onclick = async () => {
+  const wachtwoord = el("ww").value;
+  if (wachtwoord.length < 8) return zeg("Een wachtwoord van minstens 8 tekens.", "fout");
+  const { error } = await supabase.auth.updateUser({ password: wachtwoord });
+  if (error) return zeg(error.message, "fout");
+  toon("nieuwWachtwoord", false);
+  el("uitleg").textContent = "";
+  zeg("Gelukt. Je kunt nu in de app inloggen met je nieuwe wachtwoord.", "goed");
+};
+
+el("inlogKnop").onclick = async () => {
+  zeg("");
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: el("email").value.trim(),
+    password: el("wachtwoord").value,
+  });
+  if (error) return zeg("Dit e-mailadres en wachtwoord horen niet bij elkaar.", "fout");
+  naVerwijderScherm(data.user.email);
+};
+
+el("verwijderKnop").onclick = async () => {
+  if (!confirm("Je account definitief verwijderen?")) return;
+  el("verwijderKnop").disabled = true;
+  zeg("Bezig…");
+  const { data } = await supabase.auth.getSession();
+  const antwoord = await fetch(PROJECT + "/functions/v1/account", {
+    method: "POST",
+    headers: {
+      apikey: PUBLISHABLE_KEY,
+      Authorization: "Bearer " + data.session.access_token,
+    },
+  });
+  if (antwoord.status === 409) {
+    el("verwijderKnop").disabled = false;
+    return zeg(
+      "Je bent de laatste beheerder van een team met andere leden. Maak eerst iemand " +
+      "anders beheerder; daarna kun je je account verwijderen.",
+      "fout",
+    );
+  }
+  if (!antwoord.ok) {
+    el("verwijderKnop").disabled = false;
+    return zeg("Er ging iets mis. Probeer het nog eens.", "fout");
+  }
+  await supabase.auth.signOut();
+  toon("verwijderen", false);
+  zeg("Je account is verwijderd. Wat op je telefoon staat, staat er nog.", "goed");
+};
+
+start();
+</script>
+</body>
+</html>
